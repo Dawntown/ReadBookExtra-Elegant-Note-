@@ -1,0 +1,104 @@
+\documentclass[en,hazy,screen,blue,14pt]{elegantnote}
+
+\title{Note for learning new tools}
+
+\author{Xiaocheng Zhou}
+\institute{STA, CUHK}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+% logo
+% \centerline{\includegraphics[width=0.2\textwidth]{logo-blue}}
+
+\newpage
+
+\section{JAX}
+\subsection{Intro to JAX}
+\begin{itemize}
+    \item Composable transformations\footnote{something like decorator in Python}
+    \begin{itemize}
+        \item \texttt{grad()}: take gradient
+        \item \texttt{jit()}: compiling by Just-in-Time
+        \item \texttt{vmap()}: auto-vectorization
+        \item \texttt{pmap()}: paralellizing
+    \end{itemize}
+    \item Functional programming: JAX has no internal variable or state, and 
+    \item Ecosystem: 
+    \begin{itemize}
+        \item network framework: \texttt{Flax} (Google), \texttt{Haiku} (DeepMind)
+        \item optimizers: \texttt{Optax}
+        \item RL lib: \texttt{RLax} (DeepMind), \texttt{Coax} (MS research)
+        \item GNN lib: \texttt{Jraph}, \texttt{JAX.M.D.} (for molecular dynamics)
+        \item evolutionary computations: \texttt{EvoJAX}, \texttt{Evosax}
+        \item federated learning: \texttt{FedJAX}
+        \item CV: \texttt{Scenic}
+    \end{itemize}
+\end{itemize}
+
+\begin{remark}[functional programming]
+    JAX functions must be pure. 
+    It means their behavior must be defined only by their inputs, 
+    and the same input must always produce the same output. 
+    No internal state that affects calculations is allowed. 
+    Also, side effects are not allowed as well.
+    \begin{itemize}
+        \item Easy parallelization
+        \item Ability to make functional \textit{compositions}
+        \item Easy Debugging
+    \end{itemize}
+\end{remark}
+
+\begin{remark}[explicit randomness]
+    JAX makes its RNG (random number generators) explicitly pure. 
+    Now a state is passed into a function that requires randomness.
+\end{remark}
+
+\begin{remark}[explicit parameters]
+    Neural network parameters are always explicitly passed around.
+    \begin{enumerate}
+        \item generate or initialize parameters
+        \item pass them into a function that uses them for calculations
+        \item this pattern is also seen in high-level neural network libraries on top of JAX, like Flax or Haiku.
+    \end{enumerate}
+\end{remark}
+
+\subsection{overview of JAX DL project}
+
+\begin{enumerate}
+    \item A \textbf{dataset} for your particular task.
+    \item A \textbf{data loader}\footnote{JAX does \textbf{not} contain its own data loaders, 
+    please refer to PyTorch or TensorFlow} 
+    to read your dataset and transform it into a sequence of batches.
+    \item A \textbf{model} is defined as a set of \textbf{model parameters} and 
+    a \textbf{function} performing \textbf{computations given the parameters}. 
+    The function can be defined \textit{using JAX primitives}, 
+    or you can use a \textit{high-level neural network library} like Flax or Haiku.
+    \item The model function can be \textbf{auto-vectorized} with \texttt{vmap()} 
+    and \textbf{compiled} with \texttt{jit()}. 
+    You can also \textbf{distribute} it to a cluster of computers with \texttt{pmap()}.
+    \item A \textbf{loss function} takes in \textbf{model parameters} and \textbf{a batch of data}. 
+    It calculates the loss value, but we really need the gradients of the loss function 
+    with respect to the model parameters. 
+    So, we obtain a \textbf{gradient function} with the help of the \textit{grad()} JAX transformation.
+    \item The gradient function is evaluated on the \textbf{model parameters} and the \textbf{input data} 
+    and produces gradients for each model parameter.
+    \item The gradients are used to \textbf{update the model parameters} with some gradient descent procedure. 
+    You can update model parameters \textit{directly} or use a \textit{special optimizer} from a separate library (say, \texttt{Optax}).
+    \item After running the \textbf{training loop for several epochs}, 
+    you get a trained model (an \textit{updated set of the parameters}) that can be used 
+    for predictions or any other task you designed the model for.
+    \item You can use your trained model to deploy it to production. 
+    There are several options available. 
+    For example, you can \textit{convert} your model to \texttt{TensorFlow} or \texttt{TFLite}, 
+    or use the model with Amazon \texttt{SageMaker}.
+\end{enumerate}
+
+
+
+
+% \nocite{en1, en2, en3}
+\printbibliography[heading=bibintoc, title=\ebibname]
+
+\end{document}
